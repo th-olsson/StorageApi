@@ -123,6 +123,22 @@ public class ProductsController : ControllerBase
         return NoContent();
     }
 
+    // Product stats
+    [HttpGet("stats")]
+    public async Task<ActionResult<ProductStatsDto>> GetProductStats()
+    {
+        var totalProducts = await _context.Product.CountAsync();
+        var totalInventoryValue = await _context.Product.SumAsync(p => p.Price * p.Count);
+        var averagePrice = await _context.Product.AverageAsync(p => p.Price);
+        var productStatsDto = new ProductStatsDto
+        {
+            TotalProducts = totalProducts,
+            TotalInventoryValue = totalInventoryValue,
+            AveragePrice = (int)averagePrice
+        };
+        return Ok(productStatsDto);
+    }
+
     private bool ProductExists(int? id)
     {
         return _context.Product.Any(e => e.Id == id);
