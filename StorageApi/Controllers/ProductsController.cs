@@ -15,8 +15,24 @@ public class ProductsController : ControllerBase
 
     // GET: api/Product
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProduct()
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProduct([FromQuery] string? category)
     {
+        // If a category is provided, filter products by that category
+        if (!string.IsNullOrEmpty(category))
+        {
+            var productsByCategory = await _context.Product
+                .Where(p => p.Category == category)
+                .Select(p => new ProductDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Price = p.Price,
+                    Count = p.Count
+                })
+                .ToListAsync();
+            return Ok(productsByCategory);
+        }
+
         var products = await _context.Product.Select(p => new ProductDto
         {
             Id = p.Id,
